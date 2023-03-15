@@ -1,30 +1,30 @@
 describe('hoge function tests', () => {
     test('test1', () => {
-      expect(func(1, 2)).toBe(3)
+      expect(hoge(1, 2)).toBe(3)
     })
   
     test('test2', () => {
-      expect(func(82873, 987234)).toBe(1070107)
+      expect(hoge(82873, 987234)).toBe(1070107)
     })
   
     test('test3', () => {
-      expect(func(0, 1)).toThrowError(ZeroError)
+      expect(hoge(0, 1)).toThrowError(ZeroError)
     })
   
     test('test4', () => {
-      expect(func(1, 0)).toThrowError(ZeroError)
+      expect(hoge(1, 0)).toThrowError(ZeroError)
     })
   
     test('test5', () => {
-      expect(func(0, 0)).toThrowError(ZeroError)
+      expect(hoge(0, 0)).toThrowError(ZeroError)
     })
   
     test('test6', () => {
-      expect(func(-1, 1)).toBe(0)
+      expect(hoge(-1, 1)).toBe(0)
     })
   
     test('test7', () => {
-      expect(func(1, -1)).toBe(0)
+      expect(hoge(1, -1)).toBe(0)
     })
 })
 
@@ -34,61 +34,7 @@ function hoge() {
 }
 describe('hoge function tests', () => {
   test('test1', () => {
-    expect(func(1, 2)).toBe(3)
-  })
-
-  test('test2', () => {
-    expect(func(82873, 987234)).toBe(1070107)
-  })
-
-  test('test3', () => {
-    expect(func(0, 1)).toThrowError(ZeroError)
-  })
-
-  test('test4', () => {
-    expect(func(1, 0)).toThrowError(ZeroError)
-  })
-
-  test('test5', () => {
-    expect(func(0, 0)).toThrowError(ZeroError)
-  })
-
-  test('test6', () => {
-    expect(func(-1, 1)).toBe(0)
-  })
-
-  test('test7', () => {
-    expect(func(1, -1)).toBe(0)
-  })
-})
-
-describe('hoge function tests', () => {
-  test('test1', () => {
-    expect(func(1, 2)).toBe(3)
-  })
-
-  test('test2', () => {
-    expect(func(82873, 987234)).toBe(1070107)
-  })
-
-  test('test3', () => {
-    expect(func(0, 1)).toThrowError(ZeroError)
-  })
-
-  test('test4', () => {
-    expect(func(1, 0)).toThrowError(ZeroError)
-  })
-
-  test('test5', () => {
-    expect(func(0, 0)).toThrowError(ZeroError)
-  })
-
-  test('test6', () => {
-    expect(func(-1, 1)).toBe(0)
-  })
-
-  test('test7', () => {
-    expect(func(1, -1)).toBe(0)
+    expect(fuga(1, 2)).toBe(3)
   })
 })
   

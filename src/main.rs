@@ -4,15 +4,51 @@ mod cli;
 use cli::Cli;
 use clap::Parser;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+use async_openai::{
+    types::{
+        ChatCompletionRequestMessageArgs,
+        CreateChatCompletionRequestArgs,
+        Role,
+        ChatCompletionRequestMessage
+    },
+    Client,
+};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
 
     let module = parse::get_ast_from_file(&args.path).unwrap();
     let spans = parse::get_describe_spans(&module);
-    for span in spans {
-        println!("describe: {} | {}", span.lo.0, span.hi.0);
-        let src = parse::get_text_from_span(span, &args.path).unwrap();
-        println!("{}", src);
+    
+    let code = parse::get_text_from_span(&spans[0], &args.path).unwrap();
+    let messages = make_messages(code);
+    let client = Client::new();
+    let request = CreateChatCompletionRequestArgs::default()
+        .max_tokens(521u16)
+        .model("gpt-3.5-turbo")
+        .messages(messages.unwrap())
+        .build()?;
+    let response = client.chat().create(request).await?;
+    for choise in response.choices {
+        println!("{}", choise.message.content)
     }
     Ok(())
+}
+
+fn make_messages(code: String) -> Result<Vec<ChatCompletionRequestMessage>, Box<dyn std::error::Error>>{
+    Ok(vec![
+        ChatCompletionRequestMessageArgs::default()
+            .role(Role::System)
+            .content("You are a programmer's tool.")
+            .build()?,
+        ChatCompletionRequestMessageArgs::default()
+            .role(Role::User)
+            .content("Given a test code, please come up with code that meets the requirements.No need for anything other than a code block in your response.")
+            .build()?,
+        ChatCompletionRequestMessageArgs::default()
+            .role(Role::User)
+            .content(code)
+            .build()?,
+    ])
 }

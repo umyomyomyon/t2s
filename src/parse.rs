@@ -11,7 +11,6 @@ use swc_ecma_ast::{self, EsVersion, ModuleItem, Stmt, Callee, Module};
 pub fn get_ast_from_file(path: &std::path::Path) -> Result<Module, Box<dyn std::error::Error>> {
     let cm: Lrc<SourceMap> = Default::default();
     let fm = cm.load_file(path)?;
-    println!("{:?}", fm);
     
     let handler = Handler::with_tty_emitter(
         ColorConfig::Auto,
@@ -75,7 +74,7 @@ fn get_describe_span(module_item: &ModuleItem) -> Option<Span> {
     }
 }
 
-pub fn get_text_from_span(span: Span, path: &std::path::Path) -> Result<String, Box<dyn std::error::Error>> {
+pub fn get_text_from_span(span: &Span, path: &std::path::Path) -> Result<String, Box<dyn std::error::Error>> {
     let cm: Lrc<SourceMap> = Default::default();
     let fm = cm.load_file(path)?;
     let text = fm.src.get(span.lo.0 as usize..span.hi.0 as usize).unwrap();

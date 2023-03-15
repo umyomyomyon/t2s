@@ -1,5 +1,6 @@
 mod parse;
 mod cli;
+mod output;
 
 use cli::Cli;
 use clap::Parser;
@@ -22,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let spans = parse::get_describe_spans(&module);
     
     let code = parse::get_text_from_span(&spans[0], &args.path).unwrap();
-    let messages = make_messages(code);
+    let messages = make_messages(&code);
     let client = Client::new();
     let request = CreateChatCompletionRequestArgs::default()
         .max_tokens(521u16)
@@ -31,12 +32,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()?;
     let response = client.chat().create(request).await?;
     for choise in response.choices {
-        println!("{}", choise.message.content)
+        output::make_file(&choise.message.content).unwrap();
     }
+
     Ok(())
 }
 
-fn make_messages(code: String) -> Result<Vec<ChatCompletionRequestMessage>, Box<dyn std::error::Error>>{
+fn make_messages(code: &String) -> Result<Vec<ChatCompletionRequestMessage>, Box<dyn std::error::Error>>{
     Ok(vec![
         ChatCompletionRequestMessageArgs::default()
             .role(Role::System)

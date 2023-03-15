@@ -77,6 +77,42 @@ fn get_describe_span(module_item: &ModuleItem) -> Option<Span> {
 pub fn get_text_from_span(span: &Span, path: &std::path::Path) -> Result<String, Box<dyn std::error::Error>> {
     let cm: Lrc<SourceMap> = Default::default();
     let fm = cm.load_file(path)?;
-    let text = fm.src.get(span.lo.0 as usize..span.hi.0 as usize).unwrap();
+    let text = fm.src.get(span.lo.0 as usize -1..span.hi.0 as usize).unwrap();
     Ok(text.to_string())
+}
+
+pub fn get_import_spans(module: &swc_ecma_ast::Module) -> Vec<Span> {
+    let mut spans = Vec::<Span>::new();
+    for item in &module.body {
+        let span = get_import_span(item);
+        if span.is_some() {
+            spans.push(span.unwrap());
+        }
+    }
+    return spans;
+}
+
+fn get_import_span(module_item: &ModuleItem) -> Option<Span> {
+    match module_item {
+        ModuleItem::ModuleDecl(module_decl) => {
+            match module_decl {
+                swc_ecma_ast::ModuleDecl::Import(import_decl) => {
+                    Some(import_decl.span)
+                },
+                _ => None,
+            }
+        },
+        _ => None,
+    }
+}
+
+pub fn make_import_decl_text(spans: &Vec<Span>, path: &std::path::Path) -> Result<String, Box<dyn std::error::Error>> {
+    let cm: Lrc<SourceMap> = Default::default();
+    let fm = cm.load_file(path)?;
+    let mut text = String::new();
+    for span in spans {
+        let span_text = fm.src.get(span.lo.0 as usize -1..span.hi.0 as usize).unwrap();
+        text.push_str(span_text);
+    }
+    Ok(text)
 }

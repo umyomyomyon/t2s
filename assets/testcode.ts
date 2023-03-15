@@ -1,3 +1,6 @@
+import { ZeroError } from './error';
+
+// 引数の一方が0の場合はエラーを投げる, それ以外は足し算を行う
 describe('hoge function tests', () => {
     test('test1', () => {
       expect(hoge(1, 2)).toBe(3)

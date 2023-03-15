@@ -2,7 +2,8 @@ use swc_common::{
     self,
     errors::{ColorConfig, Handler},
     sync::Lrc,
-    SourceMap
+    SourceMap,
+    Span
 };
 use swc_ecma_parser::{lexer::Lexer, Parser, StringInput, Syntax};
 use swc_ecma_ast::{self, EsVersion, ModuleItem, Stmt, Callee, Module};
@@ -29,21 +30,23 @@ pub fn get_ast_from_file(path: &std::path::Path) -> Result<Module, Box<dyn std::
     Ok(module)
 }
 
-pub fn get_text_from_module(module: &swc_ecma_ast::Module) -> String {
-    let mut text = String::new();
+pub fn get_describe_spans(module: &swc_ecma_ast::Module) -> Vec<Span> {
+    let mut spans = Vec::<Span>::new();
     for item in &module.body {
-        match_describe(item);
-        text.push_str(&format!("{:?}", item));
+        let span = get_describe_span(item);
+        if span.is_some() {
+            spans.push(span.unwrap());
+        }
     }
-    text
+    return spans;
 }
 
-fn match_describe(module_item: &ModuleItem) {
+fn get_describe_span(module_item: &ModuleItem) -> Option<Span> {
     match module_item {
         ModuleItem::Stmt(stmt) => {
             match stmt {
-                Stmt::Expr(expr) => {
-                    let e = expr.expr.clone();
+                Stmt::Expr(expr_stmt) => {
+                    let e = expr_stmt.expr.clone();
                     match *e {
                         swc_ecma_ast::Expr::Call(call_expr) => {
                             let callee = call_expr.callee.clone();
@@ -51,20 +54,30 @@ fn match_describe(module_item: &ModuleItem) {
                                 Callee::Expr(expr) => {
                                     match *expr {
                                         swc_ecma_ast::Expr::Ident(ident) => {
-                                            println!("Ident: {:?}", ident.sym);
+                                            if ident.to_string().contains("describe") {
+                                                return Some(expr_stmt.span);
+                                            }
+                                            None
                                         },
-                                        _ => (),
+                                        _ => None,
                                     }
                                 },
-                                _ => (),
+                                _ => None,
                             }
                         },
-                        _ => (),
+                        _ => None,
                     }
                 },
-                _ => (),
+                _ => None,
             }
         },
-        _ => (),
+        _ => None,
     }
+}
+
+pub fn get_text_from_span(span: Span, path: &std::path::Path) -> Result<String, Box<dyn std::error::Error>> {
+    let cm: Lrc<SourceMap> = Default::default();
+    let fm = cm.load_file(path)?;
+    let text = fm.src.get(span.lo.0 as usize..span.hi.0 as usize).unwrap();
+    Ok(text.to_string())
 }

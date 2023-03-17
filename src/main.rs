@@ -5,6 +5,7 @@ mod api;
 
 use cli::Cli;
 use clap::Parser;
+use futures::future;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -14,13 +15,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let imports = parse::get_import_spans(&module);
     let import_text = parse::make_import_decl_text(&imports, &args.path).unwrap();
     let spans = parse::get_describe_spans(&module);
-    for (i, span) in spans.iter().enumerate() {
+
+
+    let requests = spans.iter().map(|span| {
         let code = import_text.clone() + parse::get_text_from_span(&span, &args.path).unwrap().as_str();
-        let response = api::request_chatgpt(&code).await.unwrap();
-        for choise in response.choices {
-            output::make_file(&choise.message.content, i.to_string()).unwrap();
+        async move {
+            api::request_chatgpt(&code).await.unwrap()
         }
-    }
+    });
+
+    let results = future::join_all(requests).await;
+    results.iter().enumerate().for_each(|(i, response)| {
+        response.choices.iter().for_each(|choise| {
+            output::make_file(&choise.message.content, i.to_string()).unwrap();
+        });
+    });
 
     Ok(())
 }

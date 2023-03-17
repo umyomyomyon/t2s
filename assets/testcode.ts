@@ -43,4 +43,3 @@ describe('hoge function tests', () => {
     expect(fuga(1, 2)).toBe(3)
   })
 })
-  
